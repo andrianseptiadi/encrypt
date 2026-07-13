@@ -1,4 +1,4 @@
-part of encrypt;
+part of '../../encrypt.dart';
 
 /// Wraps the Fernet Algorithm.
 class Fernet implements Algorithm {
@@ -12,8 +12,8 @@ class Fernet implements Algorithm {
     if (key.length != 32) {
       throw StateError('Fernet key must be 32 url-safe base64-encoded bytes.');
     }
-    _signKey = Key(Uint8List.fromList(key.bytes.sublist(0, 16)));
-    _encryptionKey = Key(Uint8List.fromList(key.bytes.sublist(16)));
+    _signKey = Key(.fromList(key.bytes.sublist(0, 16)));
+    _encryptionKey = Key(.fromList(key.bytes.sublist(16)));
     if (clock == null) {
       _clock = Clock();
     } else {
@@ -24,7 +24,7 @@ class Fernet implements Algorithm {
   @override
   Encrypted encrypt(Uint8List bytes, {IV? iv, Uint8List? associatedData}) {
     if (iv == null) {
-      iv = IV.fromSecureRandom(16);
+      iv = .fromSecureRandom(16);
     }
     int currentTime = (_clock.now().millisecondsSinceEpoch / 1000).round();
     final encryptedBytes = _encryptFromParts(bytes, currentTime, iv);
@@ -56,8 +56,9 @@ class Fernet implements Algorithm {
     }
     iv = IV(Uint8List.fromList(data.sublist(9, 25)));
     final length = data.length;
-    final ciphertext =
-        Encrypted(Uint8List.fromList(data.sublist(25, length - 32)));
+    final ciphertext = Encrypted(
+      Uint8List.fromList(data.sublist(25, length - 32)),
+    );
     final aes = AES(_encryptionKey, mode: AESMode.cbc);
     final decrypted = aes.decrypt(ciphertext, iv: iv);
     return decrypted;
@@ -79,9 +80,9 @@ class Fernet implements Algorithm {
       //  overloading problem -we'll all be dead when it overflows
       //  (max int of double/millseconds in year
       //   =9007199254740991 / 3.154e+10 = 285580 years from 1970)
-      final int hi=bdata.getUint32(0, Endian.big);
-      final int low=bdata.getUint32(4, Endian.big);
-      return (hi<<32|low);
+      final int hi = bdata.getUint32(0, Endian.big);
+      final int low = bdata.getUint32(4, Endian.big);
+      return (hi << 32 | low);
     }
   }
 
@@ -106,8 +107,8 @@ class Fernet implements Algorithm {
       bdata.setUint64(0, currentTime, Endian.big);
     } catch (_) {
       // in dart2js there is no setUint64(), so fall back and improvise.
-      final int hi=(currentTime>>32)&0xffffffff;
-      final int low=currentTime&0xffffffff;
+      final int hi = (currentTime >> 32) & 0xffffffff;
+      final int low = currentTime & 0xffffffff;
       bdata.setUint32(0, hi, Endian.big);
       bdata.setUint32(4, low, Endian.big);
     }
@@ -117,6 +118,6 @@ class Fernet implements Algorithm {
     var hmac = Hmac(sha256, _signKey.bytes);
     var digest = hmac.convert(parts).bytes;
     final result = [...parts, ...Uint8List.fromList(digest)];
-    return Uint8List.fromList(result);
+    return .fromList(result);
   }
 }

@@ -1,4 +1,4 @@
-part of encrypt;
+part of '../../encrypt.dart';
 
 /// Wraps the AES Algorithm.
 class AES implements Algorithm {
@@ -9,10 +9,10 @@ class AES implements Algorithm {
   final StreamCipher? _streamCipher;
 
   AES(this.key, {this.mode = AESMode.sic, this.padding = 'PKCS7'})
-      : _streamCipher = padding == null && _streamable.contains(mode)
-            ? StreamCipher('AES/${_modes[mode]}')
-            : null {
-    if (mode == AESMode.gcm) {
+    : _streamCipher = padding == null && _streamable.contains(mode)
+          ? StreamCipher('AES/${_modes[mode]}')
+          : null {
+    if (mode == .gcm) {
       _cipher = GCMBlockCipher(AESEngine());
     } else {
       _cipher = padding != null
@@ -28,11 +28,11 @@ class AES implements Algorithm {
     }
 
     if (_streamCipher != null) {
-      _streamCipher!
+      _streamCipher
         ..reset()
         ..init(true, _buildParams(iv, associatedData: associatedData));
 
-      return Encrypted(_streamCipher!.process(bytes));
+      return Encrypted(_streamCipher.process(bytes));
     }
 
     _cipher
@@ -53,11 +53,11 @@ class AES implements Algorithm {
     }
 
     if (_streamCipher != null) {
-      _streamCipher!
+      _streamCipher
         ..reset()
         ..init(false, _buildParams(iv, associatedData: associatedData));
 
-      return _streamCipher!.process(encrypted.bytes);
+      return _streamCipher.process(encrypted.bytes);
     }
 
     _cipher
@@ -82,7 +82,7 @@ class AES implements Algorithm {
   }
 
   CipherParameters _buildParams(IV? iv, {Uint8List? associatedData}) {
-    if (mode == AESMode.ecb || iv == null) {
+    if (mode == .ecb || iv == null) {
       if (padding != null) {
         return PaddedBlockCipherParameters(KeyParameter(key.bytes), null);
       } else {
@@ -90,12 +90,12 @@ class AES implements Algorithm {
       }
     }
 
-    if (mode == AESMode.gcm) {
+    if (mode == .gcm) {
       return AEADParameters(
         KeyParameter(key.bytes),
         128,
         iv.bytes,
-        associatedData ?? Uint8List.fromList([]),
+        associatedData ?? .fromList([]),
       );
     }
 
@@ -107,39 +107,28 @@ class AES implements Algorithm {
   }
 
   PaddedBlockCipherParameters _paddedParams(IV iv) {
-    if (mode == AESMode.ecb) {
+    if (mode == .ecb) {
       return PaddedBlockCipherParameters(KeyParameter(key.bytes), null);
     }
 
     return PaddedBlockCipherParameters(
-        ParametersWithIV<KeyParameter>(KeyParameter(key.bytes), iv.bytes),
-        null);
+      ParametersWithIV<KeyParameter>(KeyParameter(key.bytes), iv.bytes),
+      null,
+    );
   }
 }
 
-enum AESMode {
-  cbc,
-  cfb64,
-  ctr,
-  ecb,
-  ofb64Gctr,
-  ofb64,
-  sic,
-  gcm,
-}
+enum AESMode { cbc, cfb64, ctr, ecb, ofb64Gctr, ofb64, sic, gcm }
 
 const Map<AESMode, String> _modes = {
-  AESMode.cbc: 'CBC',
-  AESMode.cfb64: 'CFB-64',
-  AESMode.ctr: 'CTR',
-  AESMode.ecb: 'ECB',
-  AESMode.ofb64Gctr: 'OFB-64/GCTR',
-  AESMode.ofb64: 'OFB-64',
-  AESMode.sic: 'SIC',
-  AESMode.gcm: 'GCM',
+  .cbc: 'CBC',
+  .cfb64: 'CFB-64',
+  .ctr: 'CTR',
+  .ecb: 'ECB',
+  .ofb64Gctr: 'OFB-64/GCTR',
+  .ofb64: 'OFB-64',
+  .sic: 'SIC',
+  .gcm: 'GCM',
 };
 
-const List<AESMode> _streamable = [
-  AESMode.sic,
-  AESMode.ctr,
-];
+const List<AESMode> _streamable = [.sic, .ctr];
